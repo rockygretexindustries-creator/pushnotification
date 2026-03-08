@@ -11,7 +11,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.wa2goose.PushNotifications2"
@@ -22,15 +24,21 @@
         "backgroundColor": "#ffffff"
       },
       "googleServicesFile": "./android/app/google-services.json",
-      "package": "com.wa2goose.PushNotifications2"
+      "package": "com.wa2goose.PushNotifications2",
+      "permissions": [
+        "INTERNET",
+        "VIBRATE",
+        "POST_NOTIFICATIONS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
-        "projectId": "e9370c3c-47e4-477b-9344-1a211f2aead2"
+        "projectId": "0651f95c-5a56-4946-9deb-e000dda044cd"
       }
-    }
+    },
+    "owner": "rogerr6969"
   }
 }

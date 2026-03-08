@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Push Notification Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .tokens-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .token-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .token-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .token-user {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .token-device {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        .token-value {
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+            word-break: break-all;
+        }
+
+        .token-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔔 Push Notification Admin Panel</h1>
+            <p>Manage and send push notifications to your users</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalTokens">0</div>
+                <div class="stat-label">Registered Devices</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalUsers">0</div>
+                <div class="stat-label">Unique Users</div>
+            </div>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <div class="card">
+            <h2>📤 Send Notification</h2>
+            <div class="form-group">
+                <label for="notificationType">Send To:</label>
+                <select id="notificationType" onchange="toggleUserIdField()">
+                    <option value="user">Specific User</option>
+                    <option value="broadcast">All Users (Broadcast)</option>
+                </select>
+            </div>
+            <div class="form-group" id="userIdGroup">
+                <label for="userId">User ID:</label>
+                <input type="text" id="userId" placeholder="e.g., user123" value="user123">
+            </div>
+            <div class="form-group">
+                <label for="title">Title:</label>
+                <input type="text" id="title" placeholder="Notification title">
+            </div>
+            <div class="form-group">
+                <label for="message">Message:</label>
+                <textarea id="message" placeholder="Notification message"></textarea>
+            </div>
+            <button onclick="sendNotification()">Send Notification</button>
+        </div>
+
+        <div class="card">
+            <h2>📱 Registered Tokens</h2>
+            <button onclick="loadTokens()" style="margin-bottom: 15px;">🔄 Refresh</button>
+            <div id="tokensList" class="tokens-list">
+                <div class="loading">Loading tokens...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+
+        function showAlert(message, type = 'success') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alertContainer.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        function toggleUserIdField() {
+            const type = document.getElementById('notificationType').value;
+            const userIdGroup = document.getElementById('userIdGroup');
+            userIdGroup.style.display = type === 'user' ? 'block' : 'none';
+        }
+
+        async function sendNotification() {
+            const type = document.getElementById('notificationType').value;
+            const userId = document.getElementById('userId').value;
+            const title = document.getElementById('title').value;
+            const message = document.getElementById('message').value;
+
+            if (!title || !message) {
+                showAlert('Please fill in title and message', 'error');
+                return;
+            }
+
+            if (type === 'user' && !userId) {
+                showAlert('Please enter a user ID', 'error');
+                return;
+            }
+
+            try {
+                const endpoint = type === 'user' ? '/send-notification' : '/send-broadcast';
+                const body = type === 'user' 
+                    ? { userId, title, message }
+                    : { title, message };
+
+                const response = await fetch(API_URL + endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(body),
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert(`✅ Notification sent successfully to ${result.data.devicesNotified} device(s)`, 'success');
+                    document.getElementById('title').value = '';
+                    document.getElementById('message').value = '';
+                } else {
+                    showAlert(`❌ ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadTokens() {
+            const tokensList = document.getElementById('tokensList');
+            tokensList.innerHTML = '<div class="loading">Loading tokens...</div>';
+
+            try {
+                const response = await fetch(API_URL + '/tokens');
+                const result = await response.json();
+
+                if (result.success) {
+                    updateStats(result.data);
+                    displayTokens(result.data);
+                } else {
+                    tokensList.innerHTML = '<p>Error loading tokens</p>';
+                }
+            } catch (error) {
+                tokensList.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        }
+
+        function updateStats(tokens) {
+            document.getElementById('totalTokens').textContent = tokens.length;
+            const uniqueUsers = new Set(tokens.map(t => t.userId)).size;
+            document.getElementById('totalUsers').textContent = uniqueUsers;
+        }
+
+        function displayTokens(tokens) {
+            const tokensList = document.getElementById('tokensList');
+
+            if (tokens.length === 0) {
+                tokensList.innerHTML = '<p style="text-align: center; color: #999;">No tokens registered yet. Run your mobile app to register a token.</p>';
+                return;
+            }
+
+            tokensList.innerHTML = tokens.map(token => `
+                <div class="token-item">
+                    <div class="token-header">
+                        <span class="token-user">👤 ${token.userId}</span>
+                        <span class="token-device">${token.deviceType}</span>
+                    </div>
+                    <div class="token-value">${token.token}</div>
+                    <div class="token-time">Registered: ${new Date(token.createdAt).toLocaleString()}</div>
+                </div>
+            `).join('');
+        }
+
+        // Load tokens on page load
+        loadTokens();
+
+        // Auto-refresh every 10 seconds
+        setInterval(loadTokens, 10000);
+    </script>
+</body>
+</html>
